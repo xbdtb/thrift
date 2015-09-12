@@ -4836,6 +4836,7 @@ THRIFT_REGISTER_GENERATOR(java, "Java",
 "    fullcamel:       Convert underscored_accessor_or_service_names to camelCase.\n"
 "    android:         Generated structures are Parcelable.\n"
 "    android_legacy:  Do not use java.io.IOException(throwable) (available for Android 2.3 and above).\n"
+"    android_async:   generate special code for async http client.\n"
 "    java5:           Generate Java 1.5 compliant code (includes android_legacy flag).\n"
 "    reuse-objects:   Data objects will not be allocated, but existing instances will be used (read and write).\n"
 "    sorted_containers:\n"
