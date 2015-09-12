@@ -75,6 +75,9 @@ public:
     iter = parsed_options.find("android_legacy");
     android_legacy_ = (iter != parsed_options.end());
 
+	iter = parsed_options.find("android_async");
+	android_async_ = (iter != parsed_options.end());
+
     iter = parsed_options.find("sorted_containers");
     sorted_containers_ = (iter != parsed_options.end());
 
@@ -312,6 +315,7 @@ public:
   bool nocamel_style_;
   bool fullcamel_style_;
   bool android_legacy_;
+  bool android_async_;
   bool java5_;
   bool sorted_containers_;
   bool reuse_objects_;
@@ -2780,15 +2784,32 @@ void t_java_generator::generate_service_async_client(t_service* tservice) {
     string args_name = (*f_iter)->get_name() + "_args";
     string result_name = (*f_iter)->get_name() + "_result";
 
-    // Main method body   
-    indent(f_service_) << "public " << function_signature_async(*f_iter, false) << " throws org.apache.thrift.TException {" << endl;
-    indent(f_service_) << "  checkReady();" << endl;
-    indent(f_service_) << "  " << funclassname << " method_call = new " + funclassname + "(" << async_argument_list(*f_iter, arg_struct, ret_type) << ", this, ___protocolFactory, ___transport);" << endl;
-    indent(f_service_) << "  this.___currentMethod = method_call;" << endl;
-    indent(f_service_) << "  ___manager.call(method_call);" << endl;
-    indent(f_service_) << "}" << endl;
+	if (!android_async_) {
+		// Main method body   
+		indent(f_service_) << "public " << function_signature_async(*f_iter, false) << " throws org.apache.thrift.TException {" << endl;
+		indent(f_service_) << "  checkReady();" << endl;
+		indent(f_service_) << "  " << funclassname << " method_call = new " + funclassname + "(" << async_argument_list(*f_iter, arg_struct, ret_type) << ", this, ___protocolFactory, ___transport);" << endl;
+		indent(f_service_) << "  this.___currentMethod = method_call;" << endl;
+		indent(f_service_) << "  ___manager.call(method_call);" << endl;
+		indent(f_service_) << "}" << endl;
 
-    f_service_ << endl;
+		f_service_ << endl;
+	}
+	else {
+		// Main method body   
+		indent(f_service_) << "public " << function_signature_async(*f_iter, false) << " {" << endl;
+		indent(f_service_) << "  try {" << endl;
+		// indent(f_service_) << "    checkReady();" << endl;
+		indent(f_service_) << "    " << funclassname << " method_call = new " + funclassname + "(" << async_argument_list(*f_iter, arg_struct, ret_type) << ", this, ___protocolFactory, ___transport);" << endl;
+		indent(f_service_) << "    this.___currentMethod = method_call;" << endl;
+		indent(f_service_) << "    ___manager.call(method_call);" << endl;
+		indent(f_service_) << "  } catch (Exception e) {" << endl;
+		indent(f_service_) << "    resultHandler.onError(e);" << endl;
+		indent(f_service_) << "  }" << endl;
+		indent(f_service_) << "}" << endl;
+
+		f_service_ << endl;
+	}
 
     // TAsyncMethod object for this function call
     indent(f_service_) << "public static class " + funclassname + " extends org.apache.thrift.async.TAsyncMethodCall {" << endl;
